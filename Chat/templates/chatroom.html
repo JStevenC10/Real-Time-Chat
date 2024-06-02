@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container col-8 mt-3">
+        <h1 id="username"><strong>{{username}}</strong></h1>
+        <h1 id="maintitle"><strong>{{room.name}}</strong></h1>
+        <div class="boxMessages">
+            {% for message in messages  %}
+                {% if message.user.username == username %}
+                    <div class="alert alert-primary send" role="alert">
+                        <strong>@{{message.user.username}} | time </strong> <br>
+                        {{message.body}}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success receive" role="alert">
+                        <strong>@{{message.user.username}} | time</strong> <br>
+                        {{message.body}}
+                    </div>
+                {% endif %}
+                
+            {% endfor %}
+        </div>
+        <div class="chat">
+            <form action="" method='POST' id='formchat'>
+                <input class="form-control pd-3" type="text" name="message" id="message" placeholder="say something"> 
+                <input class="btn btn-success pd-2 mt-2" type="submit" id="inputSend" value="send">
+                <a class="btn btn-danger pd-2 mt-2" href="{% url 'home' %}"><i class="fa-solid fa-paper-plane"></i> Exit to chat!</a>
+            </form>
+            
+        </div>
+    </div>
+
+    <script>
+        // room name
+        let title = document.getElementById('maintitle');
+        // username for request user
+        const username = document.getElementById('username');
+        title.style.textAlign = 'center';
+        let roomName = document.getElementById('maintitle').textContent;
+        const boxMessages = document.querySelector('.boxMessages');
+        // estilos box message'
+        boxMessages.style.maxHeight = '320px';
+        boxMessages.style.overflow = 'auto';
+        // clases mensajes
+        boxMessages.style.display = 'flex';
+        boxMessages.style.flexDirection = 'column';
+        // enviado
+        let messagesSend = document.getElementsByClassName('send');
+        let messagesReceive = document.getElementsByClassName('receive');
+        Array.from(messagesSend).forEach(e =>{
+            e.style.width = '55%';
+            e.style.alignSelf = 'end';
+        })
+        // recibido
+        Array.from(messagesReceive).forEach(e =>{
+            e.style.width = '55%';
+            e.style.alignSelf = 'start';
+        })
+     
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/chat/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onopen = (e)=>{
+            console.log('Conected to chat!');
+        };
+
+        chatSocket.onclose = (e)=>{
+            console.log('desconect to chat!');
+        }
+
+        chatSocket.onmessage = (e)=>{
+            const data = JSON.parse(e.data);
+            if (data['username'] == username.textContent) {
+                let htmlCode = `<div class="alert alert-primary send"  role="alert">
+                                <strong>@${data['username']} | time </strong> <br>
+                                ${data['message']}
+                                </div>`;
+                    boxMessages.innerHTML += htmlCode;
+            } else {
+                let htmlCode = `<div class="alert alert-success receive"  role="alert">
+                                <strong>@${data['username']} | time </strong> <br>
+                                ${data['message']}
+                                </div>`;
+                    boxMessages.innerHTML += htmlCode;
+            }
+            
+            //window.location.reload();
+        };
+
+        let inputMessage = document.getElementById('message');
+        let formChat = document.getElementById('formchat');
+        username.style.textAlign = 'center';
+
+        formChat.addEventListener('submit', (e)=>{
+            e.preventDefault();
+            let message = inputMessage.value;
+            data = {
+                "message": message,
+                "username": username.textContent,
+                "room": roomName                
+            };
+            chatSocket.send(JSON.stringify(data));        
+            inputMessage.value = '';
+        })
+    </script>
+    
+
+{% endblock content %}

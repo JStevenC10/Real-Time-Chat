@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" id='containerMain'>
+    <div class="card my-10px" style="width: 18rem;">
+        {% if profile.picture %}
+        <img src="{{profile.picture.url}}" class="card-img-top" alt="...">
+        {% else %}
+        <img src="https://brighterwriting.com/wp-content/uploads/icon-user-default.png" class="card-img-top" alt="deafult">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{user.username}}</h5>
+          <p class="card-text"><strong>Chat rooms created:</strong>
+            {% for n in profile.names_rooms_created  %}
+                {{n}},
+            {% endfor %}
+        </p>
+          <a href="#" class="btn btn-primary">rooms created: {{profile.rooms_created}}</a>
+        </div>
+      </div>
+</div>
+
+<script>
+    const container = document.getElementById('containerMain');
+    container.style.width = '100vw';
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+</script>
+
+{% endblock content %}
