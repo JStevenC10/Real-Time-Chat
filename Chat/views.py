@@ -59,7 +59,7 @@ def logout_user(request):
 
 @login_required
 def view_profile(request, *args, **kwargs):
-    user = request.user
+    user = User.objects.filter(username=kwargs['username']).first()
     user_profile = Profile.objects.filter(user=user).first()
     context = {
         'user': user,
